@@ -2,7 +2,7 @@ from fastapi import FastAPI
 import uvicorn
 
 # Import routers from your other files
-from dd import llm_router
+from medical_api import llm_router
 from comfyUI_api import comfyui_router
 
 app = FastAPI()

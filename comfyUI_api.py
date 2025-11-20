@@ -11,6 +11,8 @@ import base64
 # ---- CONFIG ----
 COMFYUI_URL = "http://127.0.0.1:8000"
 WORKFLOW_FILE = "workflow.json"
+PROMPT_NODE_ID = "6"
+OUTPUT_NODE_ID = "9"
 
 # ---- ROUTER ----
 comfyui_router = APIRouter()
@@ -18,12 +20,6 @@ comfyui_router = APIRouter()
 # ---- REQUEST BODY MODEL ----
 class ImagePromptRequest(BaseModel):
     prompt: str
-    # The node ID in your workflow.json that is a CLIPTextEncode for the positive prompt
-    # In the provided example workflow.json, this is "6"
-    prompt_node_id: str = "6"
-    # The node ID for the final output image (e.g., SaveImage or PreviewImage)
-    # In the provided example workflow.json, this is "9"
-    output_node_id: str = "9"
 
 # ---- COMFYUI CLIENT ----
 def queue_prompt(prompt, client_id):
@@ -87,12 +83,12 @@ def generate_image(request: ImagePromptRequest):
         raise HTTPException(status_code=500, detail=f"Workflow file '{WORKFLOW_FILE}' not found.")
 
     # Inject the prompt into the workflow
-    prompt_workflow[request.prompt_node_id]['inputs']['text'] = request.prompt
+    prompt_workflow[PROMPT_NODE_ID]['inputs']['text'] = request.prompt
     
     ws = websocket.WebSocket()
     try:
         ws.connect(f"ws://{COMFYUI_URL.split('//')[1]}/ws?clientId={client_id}")
-        images = get_images(ws, prompt_workflow, client_id, request.output_node_id)
+        images = get_images(ws, prompt_workflow, client_id, OUTPUT_NODE_ID)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to connect or get image from ComfyUI: {e}")
     finally:
